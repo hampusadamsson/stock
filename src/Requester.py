@@ -1,9 +1,11 @@
 import requests
 import json
-
 import time
+from pathlib import Path
 
 from Data_manager import save_multiple
+SP500 = str(Path(__file__).parent.parent) + "/resources/s&p500.txt"
+
 
 query = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&apikey={}&symbol={}&outputsize=full"
 
@@ -21,7 +23,7 @@ def request_stock(key, ticker):
 
 
 def request_all_stocks(key, delay=15):
-    with open("../resources/s&p500.txt", "r") as fn:
+    with open(SP500, "r") as fn:
         symbols = fn.readlines()
     for s in symbols:
         request_stock(key, s.strip('\n'))
