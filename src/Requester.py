@@ -1,16 +1,16 @@
-import requests
 import json
 import time
-from pathlib import Path
-
+import requests
+from Config import get_config
 from Data_manager import save_multiple
-SP500 = str(Path(__file__).parent.parent) + "/resources/s&p500.txt"
-
 
 query = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&apikey={}&symbol={}&outputsize=full"
 
+config = get_config()
 
-def request_stock(key, ticker):
+
+def request_stock(ticker):
+    key = config["REQUESTER"]["API_KEY_ALPHA_VANTAGE"]
     q = query.format(key, ticker)
     print("Fetching data ({}) ...".format(ticker))
     ans = requests.get(q)
@@ -19,13 +19,18 @@ def request_stock(key, ticker):
     if days is None:
         print(json_object)
         return None
+    print(days)
     save_multiple([[ticker] + [d] + [t[1] for t in sorted(days.get(d).items(), key=lambda x: x[0])] for d in days])
+    return "OK"
 
 
-def request_all_stocks(key, delay=15):
-    with open(SP500, "r") as fn:
-        symbols = fn.readlines()
+def request_all_stocks():
+    delay = config["REQUESTER"]["SLEEP_BETWEEN_REQUESTS"]
+    symbols = list(config["STOCKS"].keys())
     for s in symbols:
-        request_stock(key, s.strip('\n'))
+        try:
+            request_stock(s)
+        except Exception as e:
+            print(e)
         time.sleep(delay)
 
